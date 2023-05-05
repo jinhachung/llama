@@ -57,7 +57,9 @@ def load(
         if n in str(ckpt_path):
             llama_size = n
     assert llama_size != None
-    print(f"Loaded LLaMA-{llama_size} in {time.time() - start_time:.2f} seconds")
+    print(f"* ========== Loaded LLaMA-{llama_size} in {time.time() - start_time:.2f} seconds ========== *")
+    print("* ========= [LLaMA config] ========== *")
+    print(f"max_seq_len: {model_args.max_seq_len}, max_batch_size: {model_args.max_batch_size}, dim: {model_args.dim}, n_layers: {model_args.n_layers}, n_heads: {model_args.n_heads}, vocab_size: {model_args.vocab_size}, local_rank: {local_rank}, world_size: {world_size}")
     return generator
 
 
@@ -66,7 +68,7 @@ def main(
     tokenizer_path: str,
     temperature: float = 0.8,
     top_p: float = 0.95,
-    max_seq_len: int = 512,
+    max_seq_len: int = 1024,
     max_batch_size: int = 32,
 ):
     local_rank, world_size = setup_model_parallel()
