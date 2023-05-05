@@ -142,6 +142,25 @@ class Attention(nn.Module):
         if mask is not None:
             scores = scores + mask  # (bs, n_local_heads, slen, cache_len + slen)
         scores = F.softmax(scores.float(), dim=-1).type_as(xq)
+        
+        # TODO: does sparsity exist in scores?
+        # save score matrix to file /home/jinha/LLaMA/llama/scores/
+        # skip if scores is not of shape (1, H, 1, N)
+        # there are several (1, 32, 2, 2) shapes at beginning
+        if scores.size(dim = 0) == 1 and scores.size(dim = 2) == 1:
+            score_save_dir = "/home/jinha/LLaMA/llama/scores/"
+            file_name = "raw_score.log"
+            with open(score_save_dir + file_name, "a") as f:
+                # scores: (1, n_heads, 1, seqlen)
+                # score_as_list: (n_heads, seqlen)
+                score_as_list = scores.squeeze().tolist()
+                # round numbers
+                #score_as_list = [ [round(e, 5) for e in r] for r in score_as_list]
+                # using 'format' disables printing in scientific format (i.e., 1e-5)
+                # thus strings are printed instead of floats making the log ugly
+                score_as_list = [ [format(round(e, 5), '0.5f') for e in r] for r in score_as_list]
+                f.write(f"Sequence #{len(score_as_list[0])}:\t{score_as_list}\n")
+        
         output = torch.matmul(scores, values)  # (bs, n_local_heads, slen, head_dim)
         output = output.transpose(
             1, 2
